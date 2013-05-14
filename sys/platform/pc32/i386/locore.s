@@ -187,7 +187,22 @@ bdb_exists:	.long	0
 	shrl	$PAGE_SHIFT, %ebx	; \
 	fillkpt(R(KPTphys), prot)
 
+/*
+ * Multiboot definitions		TODO: extract to header file
+ */
+#define MULTIBOOT_HEADER_MAGIC		0x1BADB002
+#define MULTIBOOT_BOOTLOADER_MAGIC	0x2BADB002
+#define MULTIBOOT_PAGE_ALIGN		0x00000001
+#define MULTIBOOT_MEMORY_INFO		0x00000002
+#define MULTIBOOT_HEADER_FLAGS		MULTIBOOT_PAGE_ALIGN \
+					| MULTIBOOT_MEMORY_INFO
+
+	.align 4
 	.text
+multiboot_header:
+	.long   MULTIBOOT_HEADER_MAGIC
+	.long   MULTIBOOT_HEADER_FLAGS
+	.long   -(MULTIBOOT_HEADER_MAGIC + MULTIBOOT_HEADER_FLAGS)
 /**********************************************************************
  *
  * This is where the bootblocks start us, set the ball rolling...
