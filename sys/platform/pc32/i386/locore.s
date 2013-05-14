@@ -138,6 +138,8 @@ vm86pa:		.long	0			/* phys addr of vm86 region */
 bdb_exists:	.long	0
 #endif
 
+multiboot_info:	.long	0
+
 /**********************************************************************
  *
  * Some handy macros
@@ -203,6 +205,7 @@ multiboot_header:
 	.long   MULTIBOOT_HEADER_MAGIC
 	.long   MULTIBOOT_HEADER_FLAGS
 	.long   -(MULTIBOOT_HEADER_MAGIC + MULTIBOOT_HEADER_FLAGS)
+
 /**********************************************************************
  *
  * This is where the bootblocks start us, set the ball rolling...
@@ -223,6 +226,13 @@ NON_GPROF_ENTRY(btext)
 /* Tell the bios to warmboot next time */
 	movw	$0x1234,0x472
 
+/* Are we booted by a Multiboot compliant bootloader? */
+	cmpl	%eax,$MULTIBOOT_BOOTLOADER_MAGIC
+	jne	1f
+	movl	%ebx,R(multiboot_info)
+	jmp     setup_stack
+
+1:
 /* Set up a real frame in case the double return in newboot is executed. */
 	pushl	%ebp
 	movl	%esp, %ebp
@@ -265,8 +275,17 @@ NON_GPROF_ENTRY(btext)
  * the old stack, but it need not be, since recover_bootinfo actually
  * returns via the old frame.
  */
+setup_stack:
 	movl	$R(.tmpstk),%esp
 
+	testl	$0,R(multiboot_info)
+	je	1f
+	movl	R(multiboot_info),%eax
+	pushl	%eax
+	call	recover_multiboot_info
+	addl	$4,%esp
+
+1:
 	call	identify_cpu
 
 	call	create_pagetables
