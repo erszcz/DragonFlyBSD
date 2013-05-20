@@ -228,7 +228,7 @@ multiboot_header:
 	movw	$0x1234,0x472
 
 /* Are we booted by a Multiboot compliant bootloader? */
-	cmpl	%eax,$MULTIBOOT_BOOTLOADER_MAGIC
+	cmpl	$MULTIBOOT_BOOTLOADER_MAGIC,%eax
 	jne	1f
 	movl	%ebx,R(multiboot_info)
 	jmp     setup_stack
