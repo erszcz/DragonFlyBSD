@@ -231,7 +231,7 @@ multiboot_header:
 	cmpl	$MULTIBOOT_BOOTLOADER_MAGIC,%eax
 	jne	1f
 	movl	%ebx,R(multiboot_info)
-	jmp     setup_stack
+	jmp     .setup_stack
 
 1:
 /* Set up a real frame in case the double return in newboot is executed. */
@@ -276,9 +276,10 @@ multiboot_header:
  * the old stack, but it need not be, since recover_bootinfo actually
  * returns via the old frame.
  */
-setup_stack:
+.setup_stack:
 	movl	$R(.tmpstk),%esp
 
+/* In case of booting via a Multiboot bootloader, */
 	testl	$0,R(multiboot_info)
 	je	1f
 	movl	R(multiboot_info),%eax
