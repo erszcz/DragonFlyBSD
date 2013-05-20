@@ -199,6 +199,13 @@ multiboot_info:	.long	0
 #define MULTIBOOT_HEADER_FLAGS		MULTIBOOT_PAGE_ALIGN \
 					| MULTIBOOT_MEMORY_INFO
 
+	.align 2
+	.section .mbheader
+multiboot_header:
+	.long   MULTIBOOT_HEADER_MAGIC
+	.long   MULTIBOOT_HEADER_FLAGS
+	.long   -(MULTIBOOT_HEADER_MAGIC + MULTIBOOT_HEADER_FLAGS)
+
 	.text
 /**********************************************************************
  *
@@ -206,14 +213,7 @@ multiboot_info:	.long	0
  *
  */
 NON_GPROF_ENTRY(btext)
-	jmp	1f
 
-multiboot_header:
-	.long   MULTIBOOT_HEADER_MAGIC
-	.long   MULTIBOOT_HEADER_FLAGS
-	.long   -(MULTIBOOT_HEADER_MAGIC + MULTIBOOT_HEADER_FLAGS)
-
-1:
 #ifdef BDE_DEBUGGER
 #ifdef BIOS_STEALS_3K
 	cmpl	$0x0375c339,0x95504
