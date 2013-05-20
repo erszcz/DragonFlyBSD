@@ -284,8 +284,9 @@ multiboot_header:
 	je	1f
 	movl	R(multiboot_info),%eax
 	pushl	%eax
-	call	recover_multiboot_info
-	addl	$4,%esp
+	hlt
+	/*call	recover_multiboot_info
+	addl	$4,%esp*/
 
 1:
 	call	identify_cpu
