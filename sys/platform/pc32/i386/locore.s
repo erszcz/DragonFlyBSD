@@ -199,7 +199,7 @@ multiboot_info:	.long	0
 #define MULTIBOOT_HEADER_FLAGS		MULTIBOOT_PAGE_ALIGN \
 					| MULTIBOOT_MEMORY_INFO
 
-	.align 2
+	.align 4
 	.section .mbheader
 multiboot_header:
 	.long   MULTIBOOT_HEADER_MAGIC
