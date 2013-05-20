@@ -21,7 +21,7 @@ SECTIONS
   kernmxps = CONSTANT (MAXPAGESIZE);
   kernpage = CONSTANT (COMMONPAGESIZE);
   . = kernbase + kernphys + SIZEOF_HEADERS;
-  .mbheader       : { *(.mbheader) }
+  .mbheader       : { *(.mbheader) } :headers
   .interp         : { *(.interp) } :text :interp
   .note.gnu.build-id : { *(.note.gnu.build-id) } :text
   .hash           : { *(.hash) }
