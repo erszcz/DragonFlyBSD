@@ -280,8 +280,8 @@ NON_GPROF_ENTRY(btext)
 	movl	$R(.tmpstk),%esp
 
 /* In case of booting via a Multiboot bootloader, */
-	testl	$0,R(multiboot_info)
-	je	1f
+	cmpl	$MULTIBOOT_BOOTLOADER_MAGIC,%eax
+	jne	1f
 	movl	R(multiboot_info),%eax
 	pushl	%eax
 	hlt
