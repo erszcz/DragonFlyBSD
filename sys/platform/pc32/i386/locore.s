@@ -282,11 +282,7 @@ NON_GPROF_ENTRY(btext)
 /* In case of booting via a Multiboot bootloader, */
 	cmpl	$MULTIBOOT_BOOTLOADER_MAGIC,%eax
 	jne	1f
-	movl	R(multiboot_info),%eax
-	pushl	%eax
-	hlt
-	/*call	recover_multiboot_info
-	addl	$4,%esp*/
+	call	recover_multiboot_info
 
 1:
 	call	identify_cpu
@@ -539,6 +535,20 @@ olddiskboot:
 	movl	12(%ebp),%eax
 	movl	%eax,R(bootdev)
 
+	ret
+
+
+/**********************************************************************
+ *
+ * Recover the Multiboot Information structure
+ *
+ */
+recover_multiboot_info:
+
+	/* Don't try too hard for now, just edit the relevant
+	 * fields of bootinfo structure. */
+	movl	$0,R(bootinfo+BI_ESYMTAB)
+	movl	$0,R(bootinfo+BI_KERNEND)
 	ret
 
 
