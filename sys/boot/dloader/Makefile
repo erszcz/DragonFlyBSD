@@ -48,3 +48,8 @@ machine:
 
 CLEANFILES+=	machine
 .endif
+
+ELF_VERBOSE=YES
+.if defined(ELF_VERBOSE)
+CFLAGS+=	-DELF_VERBOSE
+.endif
