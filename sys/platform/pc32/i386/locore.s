@@ -324,6 +324,9 @@ NON_GPROF_ENTRY(btext)
 	call	bdb_commit_paging
 #endif
 
+	pushl	%eip				/* push current location for debugging */
+	pushl	$begin				/* push this address twice,
+						   once for marking top of stack, once for jumping to  */
 	pushl	$begin				/* jump to high virtualized address */
 	ret
 
