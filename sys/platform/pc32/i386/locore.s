@@ -324,10 +324,11 @@ NON_GPROF_ENTRY(btext)
 	call	bdb_commit_paging
 #endif
 
-	pushl	%eip				/* push current location for debugging */
 	pushl	$begin				/* push this address twice,
-						   once for marking top of stack, once for jumping to  */
-	pushl	$begin				/* jump to high virtualized address */
+						   once for marking top of stack,
+						   once for jumping to  */
+	call	1f
+1:	pushl	$begin				/* jump to high virtualized address */
 	ret
 
 /* now running relocated at KERNBASE where the system is linked to run */
