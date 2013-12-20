@@ -38,3 +38,8 @@ SRCS+=	do_default.c
 .endif
 
 MAN+=	loader.8
+
+ELF_VERBOSE=YES
+.if defined(ELF_VERBOSE)
+CFLAGS+=	-DELF_VERBOSE
+.endif
