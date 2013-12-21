@@ -9,7 +9,7 @@ PHDRS
 {
   headers PT_PHDR PHDRS ;
   interp PT_INTERP ;
-  text PT_LOAD FILEHDR PHDRS ;
+  text PT_LOAD FILEHDR PHDRS AT (0x100000);
   data PT_LOAD ;
   dynamic PT_DYNAMIC ;
 }
