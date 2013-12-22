@@ -9,7 +9,7 @@ PHDRS
 {
   headers PT_PHDR PHDRS ;
   interp PT_INTERP ;
-  text PT_LOAD FILEHDR PHDRS AT (0x100000);
+  text PT_LOAD FILEHDR PHDRS ;
   data PT_LOAD ;
   dynamic PT_DYNAMIC ;
 }
@@ -21,7 +21,7 @@ SECTIONS
   kernmxps = CONSTANT (MAXPAGESIZE);
   kernpage = CONSTANT (COMMONPAGESIZE);
   . = kernbase + kernphys + SIZEOF_HEADERS;
-  .interp         : { *(.mbheader)
+  .interp         : AT (ADDR(.interp) - kernbase) { *(.mbheader)
                       *(.interp) } :text :interp
   .note.gnu.build-id : { *(.note.gnu.build-id) } :text
   .hash           : { *(.hash) }
@@ -51,12 +51,12 @@ SECTIONS
       *(.rel.iplt)
       PROVIDE_HIDDEN (__rel_iplt_end = .);
     }
-  .init           :
+  .init           : AT (ADDR(.init) - kernbase)
   {
     KEEP (*(.init))
   } =0x90909090
   .plt            : { *(.plt) *(.iplt) }
-  .text           :
+  .text           : AT (ADDR(.text) - kernbase)
   {
     *(.text.unlikely .text.*_unlikely)
     *(.text.exit .text.exit.*)
