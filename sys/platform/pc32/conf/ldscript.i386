@@ -21,8 +21,11 @@ SECTIONS
   kernmxps = CONSTANT (MAXPAGESIZE);
   kernpage = CONSTANT (COMMONPAGESIZE);
   . = kernbase + kernphys + SIZEOF_HEADERS;
-  .interp         : AT (ADDR(.interp) - kernbase) { *(.mbheader)
-                      *(.interp) } :text :interp
+  .interp         : AT (ADDR(.interp) - kernbase)
+  {
+    *(.mbheader)
+    *(.interp)
+  } :text :interp
   .note.gnu.build-id : { *(.note.gnu.build-id) } :text
   .hash           : { *(.hash) }
   .gnu.hash       : { *(.gnu.hash) }
@@ -51,12 +54,12 @@ SECTIONS
       *(.rel.iplt)
       PROVIDE_HIDDEN (__rel_iplt_end = .);
     }
-  .init           : AT (ADDR(.init) - kernbase)
+  .init           :
   {
     KEEP (*(.init))
   } =0x90909090
   .plt            : { *(.plt) *(.iplt) }
-  .text           : AT (ADDR(.text) - kernbase)
+  .text           :
   {
     *(.text.unlikely .text.*_unlikely)
     *(.text.exit .text.exit.*)
