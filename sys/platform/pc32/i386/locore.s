@@ -99,7 +99,7 @@
 	.space	0x2000		/* space for tmpstk - temporary stack */
 .tmpstk:
 
-	.globl	boothowto,bootdev,bootinfo
+	.globl	boothowto,bootdev,bootinfo,multiboot_info
 
 bootinfo:	.space	BOOTINFO_SIZE		/* bootinfo buffer space */
 
