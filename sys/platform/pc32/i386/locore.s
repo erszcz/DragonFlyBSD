@@ -229,11 +229,15 @@ NON_GPROF_ENTRY(btext)
 
 /* Are we booted by a Multiboot compliant bootloader? */
 	cmpl	$MULTIBOOT_BOOTLOADER_MAGIC,%eax
-	jne	1f
-	movl	%ebx,R(multiboot_info)
-	jmp     .setup_stack
+	jne	.no_multiboot
+	/* We won't be using the traditional bootinfo,
+	 * so mark the relevant fields as undefined. */
+	movl	$0, R(bootinfo+BI_ESYMTAB)
+	movl	$0, R(bootinfo+BI_KERNEND)
+	movl	%ebx, R(multiboot_info)
+	jmp     setup_stack
+.no_multiboot:
 
-1:
 /* Set up a real frame in case the double return in newboot is executed. */
 	pushl	%ebp
 	movl	%esp, %ebp
@@ -276,15 +280,9 @@ NON_GPROF_ENTRY(btext)
  * the old stack, but it need not be, since recover_bootinfo actually
  * returns via the old frame.
  */
-.setup_stack:
+setup_stack:
 	movl	$R(.tmpstk),%esp
 
-/* In case of booting via a Multiboot bootloader, */
-	cmpl	$MULTIBOOT_BOOTLOADER_MAGIC,%eax
-	jne	1f
-	call	recover_multiboot_info
-
-1:
 	call	identify_cpu
 
 	call	create_pagetables
@@ -539,20 +537,6 @@ olddiskboot:
 	movl	12(%ebp),%eax
 	movl	%eax,R(bootdev)
 
-	ret
-
-
-/**********************************************************************
- *
- * Recover the Multiboot Information structure
- *
- */
-recover_multiboot_info:
-
-	/* Don't try too hard for now, just edit the relevant
-	 * fields of bootinfo structure. */
-	movl	$0,R(bootinfo+BI_ESYMTAB)
-	movl	$0,R(bootinfo+BI_KERNEND)
 	ret
 
 
