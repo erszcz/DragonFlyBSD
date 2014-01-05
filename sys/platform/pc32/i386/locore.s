@@ -58,6 +58,19 @@
 #include "assym.s"
 
 /*
+ * Multiboot definitions		TODO: extract to header file
+ */
+#define MULTIBOOT_HEADER_MAGIC		0x1BADB002
+#define MULTIBOOT_BOOTLOADER_MAGIC	0x2BADB002
+#define MULTIBOOT_PAGE_ALIGN		0x00000001
+#define MULTIBOOT_MEMORY_INFO		0x00000002
+#define MULTIBOOT_HEADER_FLAGS		MULTIBOOT_PAGE_ALIGN \
+					| MULTIBOOT_MEMORY_INFO
+#define MULTIBOOT_CMDLINE_MAX		0x1000
+#define MI_CMDLINE_FLAG			(1 << 2)
+#define MI_CMDLINE			0x10
+
+/*
  *	XXX
  *
  * Note: This version greatly munged to avoid various assembler errors
@@ -99,7 +112,7 @@
 	.space	0x2000		/* space for tmpstk - temporary stack */
 .tmpstk:
 
-	.globl	boothowto,bootdev,bootinfo,multiboot_info
+	.globl	boothowto,bootdev,bootinfo,multiboot_cmdline
 
 bootinfo:	.space	BOOTINFO_SIZE		/* bootinfo buffer space */
 
@@ -138,7 +151,9 @@ vm86pa:		.long	0			/* phys addr of vm86 region */
 bdb_exists:	.long	0
 #endif
 
-multiboot_info:	.long	0
+multiboot_info:		.long	0
+multiboot_cmdline:	.space	MULTIBOOT_CMDLINE_MAX, 0
+			.byte	0
 
 /**********************************************************************
  *
@@ -188,16 +203,6 @@ multiboot_info:	.long	0
 	movl	%eax, %ebx		; \
 	shrl	$PAGE_SHIFT, %ebx	; \
 	fillkpt(R(KPTphys), prot)
-
-/*
- * Multiboot definitions		TODO: extract to header file
- */
-#define MULTIBOOT_HEADER_MAGIC		0x1BADB002
-#define MULTIBOOT_BOOTLOADER_MAGIC	0x2BADB002
-#define MULTIBOOT_PAGE_ALIGN		0x00000001
-#define MULTIBOOT_MEMORY_INFO		0x00000002
-#define MULTIBOOT_HEADER_FLAGS		MULTIBOOT_PAGE_ALIGN \
-					| MULTIBOOT_MEMORY_INFO
 
 	.section .mbheader
 	.align 4
@@ -282,6 +287,12 @@ NON_GPROF_ENTRY(btext)
  */
 setup_stack:
 	movl	$R(.tmpstk),%esp
+
+/* If booted using Multiboot preserve the boot info. */
+	cmpl	$MULTIBOOT_BOOTLOADER_MAGIC, %eax
+	jne	.no_multiboot
+	call	recover_multiboot_info
+.no_multiboot:
 
 	call	identify_cpu
 
@@ -536,6 +547,33 @@ olddiskboot:
 	movl	%eax,R(boothowto)
 	movl	12(%ebp),%eax
 	movl	%eax,R(bootdev)
+
+	ret
+
+
+/**********************************************************************
+ *
+ * Recover the relevant parts of the Multiboot information structure.
+ *
+ */
+recover_multiboot_info:
+	/* Preserve the cmdline if present. */
+	movl	R(multiboot_info), %eax
+	testl	$MI_CMDLINE_FLAG, (%eax)
+	/* No cmdline present. */
+	jz	.cp_cmdline_end
+	/* Recover cmdline. */
+	movl	MI_CMDLINE(%eax), %esi
+	movl	$R(multiboot_cmdline), %edi
+	movl	$MULTIBOOT_CMDLINE_MAX, %ecx
+	cld
+.cp_cmdline:
+	cmpl	$0, (%esi)
+	jz	.cp_cmdline_end
+	movsb
+	testl	%ecx, %ecx
+	jnz	.cp_cmdline
+.cp_cmdline_end:
 
 	ret
 
