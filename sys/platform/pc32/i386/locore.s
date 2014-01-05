@@ -234,14 +234,14 @@ NON_GPROF_ENTRY(btext)
 
 /* Are we booted by a Multiboot compliant bootloader? */
 	cmpl	$MULTIBOOT_BOOTLOADER_MAGIC,%eax
-	jne	.no_multiboot
+	jne	1f
 	/* We won't be using the traditional bootinfo,
 	 * so mark the relevant fields as undefined. */
 	movl	$0, R(bootinfo+BI_ESYMTAB)
 	movl	$0, R(bootinfo+BI_KERNEND)
 	movl	%ebx, R(multiboot_info)
-	jmp     setup_stack
-.no_multiboot:
+	jmp     2f
+1:
 
 /* Set up a real frame in case the double return in newboot is executed. */
 	pushl	%ebp
@@ -285,14 +285,13 @@ NON_GPROF_ENTRY(btext)
  * the old stack, but it need not be, since recover_bootinfo actually
  * returns via the old frame.
  */
-setup_stack:
-	movl	$R(.tmpstk),%esp
+2:	movl	$R(.tmpstk),%esp
 
 /* If booted using Multiboot preserve the boot info. */
 	cmpl	$MULTIBOOT_BOOTLOADER_MAGIC, %eax
-	jne	.no_multiboot
+	jne	1f
 	call	recover_multiboot_info
-.no_multiboot:
+1:
 
 	call	identify_cpu
 
@@ -561,19 +560,19 @@ recover_multiboot_info:
 	movl	R(multiboot_info), %eax
 	testl	$MI_CMDLINE_FLAG, (%eax)
 	/* No cmdline present. */
-	jz	.cp_cmdline_end
+	jz	2f
 	/* Recover cmdline. */
 	movl	MI_CMDLINE(%eax), %esi
 	movl	$R(multiboot_cmdline), %edi
 	movl	$MULTIBOOT_CMDLINE_MAX, %ecx
 	cld
-.cp_cmdline:
+1:
 	cmpl	$0, (%esi)
-	jz	.cp_cmdline_end
+	jz	2f
 	movsb
 	testl	%ecx, %ecx
-	jnz	.cp_cmdline
-.cp_cmdline_end:
+	jnz	1b
+2:
 
 	ret
 
