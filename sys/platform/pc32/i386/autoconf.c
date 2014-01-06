@@ -48,6 +48,7 @@
 #include "opt_bootp.h"
 #include "opt_ffs.h"
 #include "opt_cd9660.h"
+//#include "opt_multiboot.h"
 #include "opt_nfs.h"
 #include "opt_nfsroot.h"
 #include "opt_rootdevname.h"
@@ -97,6 +98,13 @@ static void	setroot (void);
 #if !defined(BOOTP_NFSROOT)
 static void	pxe_setup_nfsdiskless(void);
 #endif
+#endif
+
+// Later, that will be in opt_multiboot.h
+#define MULTIBOOT 1
+
+#if defined(MULTIBOOT)
+static void	multiboot_setup_kenv(void);
 #endif
 
 SYSINIT(configure1, SI_SUB_CONFIGURE, SI_ORDER_FIRST, configure_first, NULL);
@@ -487,4 +495,36 @@ match_done:
 }
 
 #endif
+#endif
+
+#if defined(MULTIBOOT)
+
+#include <sys/libkern.h>
+
+extern char* multiboot_cmdline;
+
+static void
+multiboot_setup_kenv(void)
+{
+	char *key, *val;
+	char *p = multiboot_cmdline;
+
+	/* Did the bootloader pass a command line? */
+	if (*p == '\0')
+		return;
+
+	/* For each key=val pair in the command line set a kenv with
+	 * the same key and val. */
+	while ((key = strsep(&p, " ")) != NULL) {
+		/* Skip extra spaces. */
+		if (*key == '\0')
+			continue;
+		val = key;
+		strsep(&val, "=");
+		ksetenv(key, val);
+	}
+}
+SYSINIT(multiboot_setup_kenv, SI_SUB_ROOT_CONF, SI_ORDER_MIDDLE,
+	multiboot_setup_kenv, NULL)
+
 #endif
