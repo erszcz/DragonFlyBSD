@@ -501,7 +501,7 @@ match_done:
 
 #include <sys/libkern.h>
 
-extern char* multiboot_cmdline;
+extern char multiboot_cmdline[];
 
 static void
 multiboot_setup_kenv(void)
