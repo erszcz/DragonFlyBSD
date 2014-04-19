@@ -521,7 +521,8 @@ multiboot_setup_kenv(void)
 			continue;
 		val = key;
 		strsep(&val, "=");
-		ksetenv(key, val);
+		if (val != NULL)
+		    ksetenv(key, val);
 	}
 }
 SYSINIT(multiboot_setup_kenv, SI_SUB_ROOT_CONF, SI_ORDER_MIDDLE,
